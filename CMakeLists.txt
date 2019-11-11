@@ -3,4 +3,4 @@ project(LRmethod C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(LRmethod main.c)
+add_executable(LRmethod main_01_03.c sim_01_03.c evc_01_03.c task_01_03.h)
