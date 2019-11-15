@@ -64,11 +64,10 @@ int validateParameters(int argc, char **argv){
     return 0;
 }
 
-int readInputData(char *inputFile, double** A, double** B, double** X, int *n)
+int readInputData(char *inputFile, double** A, int *n)
 {
     int i, checkInput;
     FILE *in = fopen(inputFile, "r");
-
 
     checkInput = fscanf(in, "%d", n);
     if(checkInput == EOF)
@@ -80,8 +79,6 @@ int readInputData(char *inputFile, double** A, double** B, double** X, int *n)
         return 1;
 
     *A = malloc((*n) * (*n) * sizeof(double));
-    *B = malloc((*n) * sizeof(double));
-    *X = malloc((*n) * sizeof(double));
 
     for(i = 0; i < (*n)*(*n); i++) {
         checkInput = fscanf(in, "%lf", (*A + i));
@@ -90,17 +87,6 @@ int readInputData(char *inputFile, double** A, double** B, double** X, int *n)
         if(checkInput == 0)
             return 3;
     }
-
-    for(i = 0; i < (*n); i++){
-        checkInput = fscanf(in, "%lf", (*B+i));
-        if (checkInput == EOF)
-            return 5;
-        if(checkInput == 0)
-            return 3;
-    }
-
-    // if(fscanf(in, "%c", &tmp) != EOF)
-    //     return 4;
 
     return 0;
 }
@@ -129,21 +115,21 @@ void printHelp(){
            "Default input_file_name value is lss_00_00_in.txt, default output_file_name value is lss_00_00_out.txt.");
 }
 
-void printMatrix(int n, int m, const double* A){
+void printSquareMatrix(int n, int m, const double* A){
     for(int i = 0; i < n; i++)
     {
         for(int j = 0; j < m; j++)
         {
-            printf("%1.9lf\n ", *AT(A, i, j, n));
+            printf("%1.9lf ", *AT(A, i, j, n));
         } printf("\n");
     }
 }
 
 int main(int argc, char* argv[]) {
     int n, setInput = 0;
-    double *A, *B, *X, *tmp;
-    char* inputFile = "lss_01_03_in.txt";
-    char* outputFile = "lss_01_03_out.txt";
+    double *A, *tmp;
+    char* inputFile = "input.txt";
+    char* outputFile = "output.txt";
 
     switch (validateParameters(argc, argv))
     {
@@ -183,7 +169,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    switch (readInputData(inputFile, &A, &B, &X, &n))
+    switch (readInputData(inputFile, &A, &n))
     {
         case 1:
             if(fl_e) printf("ValidationError. Incorrect input.\n");
@@ -197,7 +183,8 @@ int main(int argc, char* argv[]) {
         default: break;
     }
 
-
+    tmp = malloc(sim_memsize_01_03(n));
+    sim_01_03(n, A, tmp, 0);
 
     return 0;
 }
