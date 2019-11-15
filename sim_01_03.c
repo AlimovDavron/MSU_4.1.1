@@ -91,9 +91,10 @@ void multiply(Matrix A, Matrix B, Matrix C){
     *C.m = *B.m;
     for(i = 0; i < *A.n; i++){
         for(j = 0; j < *B.m; j++){
+            *At(C, i, j) = 0;
             for(k = 0; k < *A.m; k++)
-                *GET(C.matrix, i, j, *B.m) += *GET(A.matrix, i, k, *A.m) *
-                        *GET(B.matrix, k, j, *B.m);
+                *At(C, i, j) += *At(A, i, k) *
+                        *At(B, k, j);
         }
     }
 }
@@ -175,12 +176,38 @@ void initSubMatrix(int iteration, Matrix A, Matrix subMatrix){
     }
 }
 
+void makeItUnit(Matrix U){
+    int i, j;
+    for(i = 0; i < *U.n; i++){
+        for(j = 0; j < *U.m; j++){
+            if(i == j) {
+                *At(U, i, j) = 1;
+            } else *At(U, i, j) = 0;
+        }
+    }
+}
+
+void initUx(Matrix x, Matrix U, Matrix tmpN, Matrix tmpNN){
+    printMatrix(x);
+    copyMatrix(x, tmpN);
+    transpose(tmpN, tmpNN);
+    printMatrix(tmpN);
+    multiply(x, tmpN, tmpNN);
+
+    printMatrix(tmpNN);
+
+    copyMatrix(tmpNN, U);
+    multiplyByN(tmpNN, 2);
+    makeItUnit(U);
+    subtract(U, tmpNN);
+}
+
 
 int sim_01_03(int n, double* A, double* tmp, double precision){
     Matrix target, a1, x, y, z, subMatrix, tmpSubMatrix;
     int i, j;
 
-    target.n = (int*)tmp;
+    /*target.n = (int*)tmp;
     target.m = (int*)tmp+1;
     target.matrix = A;
     *target.n = n;
@@ -208,14 +235,64 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
 
     tmpSubMatrix.matrix = (tmp + 5*n + 5 + n*n);
     tmpSubMatrix.n = (int*)(tmp + 5*n + 5 + 2*n*n);
-    tmpSubMatrix.m = (int*)(tmp + 5*n + 5 + 2*n*n) + 1;
+    tmpSubMatrix.m = (int*)(tmp + 5*n + 5 + 2*n*n) + 1;*/
 
-    for(i = 0; i < n - 2 -1; i++){
+    target.n = (int*)malloc(sizeof(int));
+    target.m = (int*)malloc(sizeof(int));
+    target.matrix = A;
+    *target.n = n;
+    *target.m = n;
+
+    a1.matrix = (double*)malloc(n*sizeof(double));
+    a1.n = (int*)malloc(sizeof(int));
+    a1.m = (int*)malloc(sizeof(int));
+
+    x.matrix= (double*)malloc(n*sizeof(double));
+    x.n = (int*)malloc(sizeof(int));
+    x.m = (int*)malloc(sizeof(int));
+
+    y.matrix=(double*)malloc(n*sizeof(double));
+    y.n = (int*)malloc(sizeof(int));
+    y.m = (int*)malloc(sizeof(int));
+
+    z.matrix=(double*)malloc(n*sizeof(double));
+    z.n = (int*)malloc(sizeof(int));
+    z.m = (int*)malloc(sizeof(int));
+
+    subMatrix.matrix = (double*)malloc(n*n*sizeof(double));
+    subMatrix.n = (int*)malloc(sizeof(int));
+    subMatrix.m = (int*)malloc(sizeof(int));
+
+    tmpSubMatrix.matrix = (double*)malloc(n*n*sizeof(double));
+    tmpSubMatrix.n = (int*)malloc(sizeof(int));
+    tmpSubMatrix.m = (int*)malloc(sizeof(int));
+
+    Matrix tmpN, tmpNN, U;
+    tmpN.matrix=(double*)malloc(n*sizeof(double));
+    tmpN.n = (int*)malloc(sizeof(int));
+    tmpN.m = (int*)malloc(sizeof(int));
+
+    tmpNN.matrix = (double*)malloc(n*n*sizeof(double));
+    tmpNN.n = (int*)malloc(sizeof(int));
+    tmpNN.m = (int*)malloc(sizeof(int));
+
+    U.matrix = (double*)malloc(n*n*sizeof(double));
+    U.n = (int*)malloc(sizeof(int));
+    U.m = (int*)malloc(sizeof(int));
+
+
+    /*for(i = 0; i < n - 2 -1; i++){
         initA1(i, target, a1);
         initX(a1, x);
         initSubMatrix(i, target, subMatrix);
         initY(subMatrix, x, y);
         initZ(x, y, z);
         calculateSubMatrix(subMatrix, x, y, tmpSubMatrix);
+        printMatrix(subMatrix);
+    }*/
+    for(i = 0; i < 1; i++){
+        initA1(i, target, a1);
+        initX(a1, x);
+        initUx(x, U, tmpN, tmpNN);
     }
 }
