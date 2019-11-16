@@ -70,6 +70,7 @@ double scalarMultiplication(Matrix a, Matrix b){
         result += *GET(a.matrix, i, 0, 1)
                 * *GET(b.matrix, i, 0, 1);
     }
+    return result;
 }
 
 double calculateNorm(Matrix a){
@@ -123,7 +124,7 @@ void initA1(int iteration, Matrix A, Matrix a1){
 }
 
 void initX(Matrix a1, Matrix x){
-    int i, j; double norm;
+    int i; double norm;
     copyMatrix(a1, x);
 
     *At(x, 0, 0) -= calculateNorm(a1);
@@ -139,15 +140,13 @@ void initY(Matrix A, Matrix x, Matrix y){
 }
 
 void initZ(Matrix x, Matrix y, Matrix z){
-    int i;
-    double scalar = scalarMultiplication(x, y);
+    int i; double scalar = scalarMultiplication(x, y);
 
     copyMatrix(y, z);
-
     multiplyByN(z, 2);
 
     for(i = 0; i < *z.n; i++){
-        *At(z, i, 0) -= 2 *scalar * (*At(x, i, 0));
+        *At(z, i, 0) -= 2 * scalar * (*At(x, i, 0));
     }
 
 }
@@ -216,6 +215,7 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
         initSubMatrix(i, target, subMatrix);
         initY(subMatrix, x, y);
         initZ(x, y, z);
-        calculateSubMatrix(subMatrix, x, y, tmpSubMatrix);
+        calculateSubMatrix(subMatrix, x, z, tmpSubMatrix);
+        printMatrix(subMatrix);
     }
 }
