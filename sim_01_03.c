@@ -70,6 +70,7 @@ double scalarMultiplication(Matrix a, Matrix b){
         result += *GET(a.matrix, i, 0, 1)
                 * *GET(b.matrix, i, 0, 1);
     }
+    return result;
 }
 
 double calculateNorm(Matrix a){
@@ -188,18 +189,31 @@ void makeItUnit(Matrix U){
 }
 
 void initUx(Matrix x, Matrix U, Matrix tmpN, Matrix tmpNN){
-    printMatrix(x);
     copyMatrix(x, tmpN);
     transpose(tmpN, tmpNN);
-    printMatrix(tmpN);
     multiply(x, tmpN, tmpNN);
-
-    printMatrix(tmpNN);
-
     copyMatrix(tmpNN, U);
     multiplyByN(tmpNN, 2);
     makeItUnit(U);
     subtract(U, tmpNN);
+}
+
+void constructReflectionMatrix(int n, Matrix U, Matrix tmp){
+    int i, j, k, d;
+    copyMatrix(U, tmp);
+    *U.n = n;
+    *U.m = n;
+    for(i = 0; i < n; i++){
+        for(j = 0; j < n; j++){
+            if(i == j) *At(U, i, j) = 1;
+            else *At(U, i, j) = 0;
+        }
+    }
+    for(i = 0, k = n - *tmp.n; i < *tmp.n; i++, k++){
+        for(j = 0, d = n - *tmp.n; j < *tmp.n; j++, d++){
+            *At(U, k, d) = *At(tmp, i, j);
+        }
+    }
 }
 
 
@@ -280,19 +294,15 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
     U.n = (int*)malloc(sizeof(int));
     U.m = (int*)malloc(sizeof(int));
 
-
-    /*for(i = 0; i < n - 2 -1; i++){
-        initA1(i, target, a1);
-        initX(a1, x);
-        initSubMatrix(i, target, subMatrix);
-        initY(subMatrix, x, y);
-        initZ(x, y, z);
-        calculateSubMatrix(subMatrix, x, y, tmpSubMatrix);
-        printMatrix(subMatrix);
-    }*/
-    for(i = 0; i < 1; i++){
+    for(i = 0; i < n - 2; i++){
         initA1(i, target, a1);
         initX(a1, x);
         initUx(x, U, tmpN, tmpNN);
+        constructReflectionMatrix(n, U, tmpNN);
+        multiply(U, target, tmpNN);
+        copyMatrix(tmpNN, target);
+        multiply(target, U, tmpNN);
+        copyMatrix(tmpNN, target);
+        printMatrix(target);
     }
 }
