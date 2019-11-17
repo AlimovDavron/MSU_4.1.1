@@ -92,9 +92,10 @@ void multiply(Matrix A, Matrix B, Matrix C){
     *C.m = *B.m;
     for(i = 0; i < *A.n; i++){
         for(j = 0; j < *B.m; j++){
+            *At(C, i, j) = 0;
             for(k = 0; k < *A.m; k++)
-                *GET(C.matrix, i, j, *B.m) += *GET(A.matrix, i, k, *A.m) *
-                        *GET(B.matrix, k, j, *B.m);
+                *At(C, i, j) += *At(A, i, k) *
+                        *At(B, k, j);
         }
     }
 }
@@ -148,6 +149,8 @@ void initZ(Matrix x, Matrix y, Matrix z){
     for(i = 0; i < *z.n; i++){
         *At(z, i, 0) -= 2 * scalar * (*At(x, i, 0));
     }
+
+
 
 }
 
