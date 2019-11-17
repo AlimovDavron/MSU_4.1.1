@@ -7,10 +7,6 @@
 
 #define GET(A, x, y, n) (A+(x)*(n)+(y))
 
-typedef struct {
-    int* n,* m;
-    double* matrix;
-}Matrix;
 
 double* At(Matrix A, int i, int j){
     return A.matrix + i * *(A.m) + j;
@@ -236,5 +232,4 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
         calculateSubMatrix(subMatrix, x, z, tmpSubMatrix);
         nextStep(i, target, a1, subMatrix);
     }
-    printMatrix(target);
 }

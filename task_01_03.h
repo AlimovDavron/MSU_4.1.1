@@ -15,4 +15,16 @@ int sim_01_03(int n, double* A, double* tmp, double precision);
 int sim_memsize_01_03(int n);
 int evc_memsize_01_03(int n);
 
+typedef struct {
+    int* n,* m;
+    double* matrix;
+}Matrix;
+
+double* At(Matrix A, int i, int j);
+void copyMatrix(Matrix original, Matrix target); // be sure that target matrix has the same or more memory
+void printMatrix(Matrix matrix);
+void transpose(Matrix A, Matrix tmp); // requires n*m additional memory
+void multiplyByN(Matrix A, double n);
+void multiply(Matrix A, Matrix B, Matrix C);
+
 #endif //LRMETHOD_TASK_01_03_H

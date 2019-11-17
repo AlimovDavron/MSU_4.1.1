@@ -185,6 +185,9 @@ int main(int argc, char* argv[]) {
 
     tmp = malloc(sim_memsize_01_03(n));
     sim_01_03(n, A, tmp, 0);
+    free(tmp);
+    tmp = malloc(evc_memsize_01_03(n));
+    evc_01_03(n,100,-1,A,A,tmp,-1);
 
     return 0;
 }
