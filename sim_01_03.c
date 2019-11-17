@@ -44,13 +44,13 @@ void copyMatrix(Matrix original, Matrix target){
 // requires n*m additional memory
 void transpose(Matrix A, Matrix tmp){
     int i, j;
+    *tmp.n = *A.m;
+    *tmp.m = *A.n;
     for(i = 0; i < *A.n; i++){
         for(j = 0; j < *A.m; j++){
             *At(tmp, j, i) = *At(A, i, j);
         }
     }
-    *tmp.n = *A.m;
-    *tmp.m = *A.n;
 
     copyMatrix(tmp, A);
 }
@@ -149,9 +149,6 @@ void initZ(Matrix x, Matrix y, Matrix z){
     for(i = 0; i < *z.n; i++){
         *At(z, i, 0) -= 2 * scalar * (*At(x, i, 0));
     }
-
-
-
 }
 
 void calculateSubMatrix(Matrix subMatrix, Matrix x, Matrix z, Matrix tmp){
@@ -177,10 +174,28 @@ void initSubMatrix(int iteration, Matrix A, Matrix subMatrix){
     }
 }
 
+void nextStep(int iteration, Matrix target, Matrix a1, Matrix targetSubMatrix){
+    int i, j, k, d, n; double norm = calculateNorm(a1);
+    n = *target.n;
+    for(i = iteration+1, k = 0; i < n; i++, k++){
+        for(j = iteration+1, d = 0; j < n; j++, d++){
+            *At(target, i, j) = *At(targetSubMatrix, k, d);
+        }
+    }
+
+    for(i = iteration+1; i < n; i++){
+        *At(target, iteration, i) = 0;
+        *At(target, i, iteration) = 0;
+    }
+
+    *At(target, iteration, iteration+1) = norm;
+    *At(target, iteration+1, iteration) = norm;
+}
+
 
 int sim_01_03(int n, double* A, double* tmp, double precision){
     Matrix target, a1, x, y, z, subMatrix, tmpSubMatrix;
-    int i, j;
+    int i;
 
     target.n = (int*)tmp;
     target.m = (int*)tmp+1;
@@ -212,13 +227,14 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
     tmpSubMatrix.n = (int*)(tmp + 5*n + 5 + 2*n*n);
     tmpSubMatrix.m = (int*)(tmp + 5*n + 5 + 2*n*n) + 1;
 
-    for(i = 0; i < n - 2 -1; i++){
+    for(i = 0; i < n - 2; i++){
         initA1(i, target, a1);
         initX(a1, x);
         initSubMatrix(i, target, subMatrix);
         initY(subMatrix, x, y);
         initZ(x, y, z);
         calculateSubMatrix(subMatrix, x, z, tmpSubMatrix);
-        printMatrix(subMatrix);
+        nextStep(i, target, a1, subMatrix);
     }
+    printMatrix(target);
 }
