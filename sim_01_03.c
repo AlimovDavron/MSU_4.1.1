@@ -5,7 +5,10 @@
 #include "task_01_03.h"
 #include <math.h>
 
-#define GET(A, x, y, n) (A+(x)*(n)+(y))
+typedef struct {
+    int* n,* m;
+    double* matrix;
+}Matrix;
 
 
 double* At(Matrix A, int i, int j){
@@ -17,7 +20,7 @@ void printMatrix(Matrix matrix){
     printf("-----\n");
     for(i = 0; i < *matrix.n; i++){
         for(j = 0; j < *matrix.m; j++){
-            printf("%lf ", *GET(matrix.matrix, i, j, *matrix.m));
+            printf("%lf ", *At(matrix, i, j));
         }
         printf("\n");
     }
@@ -37,20 +40,6 @@ void copyMatrix(Matrix original, Matrix target){
     }
 }
 
-// requires n*m additional memory
-void transpose(Matrix A, Matrix tmp){
-    int i, j;
-    *tmp.n = *A.m;
-    *tmp.m = *A.n;
-    for(i = 0; i < *A.n; i++){
-        for(j = 0; j < *A.m; j++){
-            *At(tmp, j, i) = *At(A, i, j);
-        }
-    }
-
-    copyMatrix(tmp, A);
-}
-
 void multiplyByN(Matrix A, double n){
     int i, j;
     for(i = 0; i < *A.n; i++){
@@ -63,8 +52,7 @@ void multiplyByN(Matrix A, double n){
 double scalarMultiplication(Matrix a, Matrix b){
     double result = 0; int i;
     for(i = 0; i < *a.n; i++){
-        result += *GET(a.matrix, i, 0, 1)
-                * *GET(b.matrix, i, 0, 1);
+        result += *At(a, i, 0) * *At(b, i, 0);
     }
     return result;
 }
@@ -75,8 +63,7 @@ double calculateNorm(Matrix a){
         return -1;
     double result = 0;
     for(i = 0; i < *a.n; i++){
-        result += (*GET(a.matrix, i, 0, 1)) *
-                  (*GET(a.matrix, i, 0, 1));
+        result += (*At(a, i, 0)) * (*At(a, i, 0));
     }
 
     return sqrt(result);
@@ -96,16 +83,6 @@ void multiply(Matrix A, Matrix B, Matrix C){
     }
 }
 
-void subtract(Matrix A, Matrix B){
-    int i, j;
-    for(i = 0; i < *A.n; i++){
-        for(j = 0; j < *A.m; j++){
-            *GET(A.matrix, i, j, *A.m) -=
-                    *GET(B.matrix, i, j, *B.m);
-        }
-    }
-}
-
 
 int sim_memsize_01_03(int n){
     return 1000*n*sizeof(double);
@@ -116,7 +93,7 @@ void initA1(int iteration, Matrix A, Matrix a1){
     *a1.m = 1;
     *a1.n = *A.n-iteration-1;
     for(i = iteration+1, j = 0; i < *A.n; i++, j++){
-        *GET(a1.matrix, j, 0, 1) = *GET(A.matrix, i, iteration, *A.n);
+        *At(a1, j, 0) = *At(A, i, iteration);
     }
 }
 
@@ -147,15 +124,15 @@ void initZ(Matrix x, Matrix y, Matrix z){
     }
 }
 
-void calculateSubMatrix(Matrix subMatrix, Matrix x, Matrix z, Matrix tmp){
-    transpose(x, tmp);
-    multiply(z, x, tmp);
-    subtract(subMatrix, tmp);
-    transpose(x, tmp);
-    transpose(z, tmp);
-    multiply(x, z, tmp);
-    subtract(subMatrix, tmp);
-    transpose(z, tmp);
+void calculateSubMatrix(Matrix subMatrix, Matrix x, Matrix z){
+    int i, j;
+
+    for(i = 0; i < *subMatrix.n; i++){
+        for(j = 0; j < *subMatrix.m; j++){
+            *At(subMatrix, i, j) -= *At(z, i, 0) * *At(x, j, 0);
+            *At(subMatrix, i, j) -= *At(x, i, 0) * *At(z, j, 0);
+        }
+    }
 }
 
 void initSubMatrix(int iteration, Matrix A, Matrix subMatrix){
@@ -219,17 +196,16 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
     subMatrix.n = (int*)(tmp+5*n+4+n*n);
     subMatrix.m = (int*)(tmp+5*n+4+n*n)+1;
 
-    tmpSubMatrix.matrix = (tmp + 5*n + 5 + n*n);
-    tmpSubMatrix.n = (int*)(tmp + 5*n + 5 + 2*n*n);
-    tmpSubMatrix.m = (int*)(tmp + 5*n + 5 + 2*n*n) + 1;
-
     for(i = 0; i < n - 2; i++){
         initA1(i, target, a1);
-        initX(a1, x);
-        initSubMatrix(i, target, subMatrix);
-        initY(subMatrix, x, y);
-        initZ(x, y, z);
-        calculateSubMatrix(subMatrix, x, z, tmpSubMatrix);
-        nextStep(i, target, a1, subMatrix);
+        if(calculateNorm(a1) > precision) {
+            initX(a1, x);
+            initSubMatrix(i, target, subMatrix);
+            initY(subMatrix, x, y);
+            initZ(x, y, z);
+            calculateSubMatrix(subMatrix, x, z);
+            nextStep(i, target, a1, subMatrix);
+        }
     }
+    printMatrix(target);
 }
