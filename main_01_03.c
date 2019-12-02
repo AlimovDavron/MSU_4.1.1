@@ -7,7 +7,10 @@ int fl_d = 0,
         fl_p = 0,
         fl_t = 0,
         fl_h = 0,
-        fl_q = 0;
+        fl_q = 0,
+        max_iter=0;
+
+double precision = 1e-14, epsilon=1e-10;
 
 int _strlen(char const *input){
     int length = 0;
@@ -51,8 +54,25 @@ int validateParameters(int argc, char **argv){
                 default:
                     return 3;
             }
-        else if(argv[i][0] == '-')
-            return 2;
+        else if(argv[i][0] == '-'){
+            int max_iter_temp; double precision_temp, epsilon_temp;
+            if(sscanf(argv[i], "-max_iter=%d",&max_iter_temp) == 1){
+                if(max_iter_temp >= 0){
+                    max_iter = max_iter_temp;
+                } else {
+                    // todo:
+                }
+            }
+            else if(sscanf(argv[i], "-pre=%lf", &precision_temp) == 1){
+                precision = precision_temp;
+            }
+            else if(sscanf(argv[i], "-eps=%lf", &epsilon_temp) == 1){
+                epsilon = epsilon_temp;
+            } else {
+                printf("err");
+                // todo:
+            }
+        }
         else{
             cnt++;
         }
@@ -91,10 +111,10 @@ int readInputData(char *inputFile, double** A, int *n)
     return 0;
 }
 
-void writeAnswer(char *outputFile, int n, const double* X, int notExist){
+void writeAnswer(char *outputFile, int n, const double* X, int result){
     int i;
     FILE *out = fopen(outputFile, "w");
-    if(notExist){
+    if(result == -1){
         fprintf(out, "%d\n", 0);
     }
     else {
@@ -105,29 +125,21 @@ void writeAnswer(char *outputFile, int n, const double* X, int notExist){
 }
 
 void printHelp(){
-    printf("Usage: lss [input_file_name] [output_file_name] [options]\n"
+    printf("Usage: evc [input_file_name] [output_file_name] [options]\n"
            "Where options include:\n"
-           "  -d        print debug messages [default OFF]\n"
-           "  -e        print errors [default OFF]\n"
-           "  -p        print matrix [default OFF]\n"
-           "  -t        print execution time [default OFF]\n"
-           "  -h, -?    print this and exit\n"
-           "Default input_file_name value is lss_00_00_in.txt, default output_file_name value is lss_00_00_out.txt.");
-}
-
-void printSquareMatrix(int n, int m, const double* A){
-    for(int i = 0; i < n; i++)
-    {
-        for(int j = 0; j < m; j++)
-        {
-            printf("%1.9lf ", *AT(A, i, j, n));
-        } printf("\n");
-    }
+           " -d                print debug messages [default OFF]\n"
+           " -e                print errors [default OFF]\n"
+           " -p                print matrix [default OFF]\n"
+           " -t                print execution time [default OFF]\n"
+           " -prec=<num>       precision [default - 1e-14]\n"
+           " -eps=<num>        epsilon [default - 1e-10]\n"
+           " -max_iter=<num>   limit number of iterations [default - 0, i.e. not limit]\n"
+           " -h, -?            print this and exit");
 }
 
 int main(int argc, char* argv[]) {
     int n, setInput = 0;
-    double *A, *tmp;
+    double *A, *tmp, *E;
     char* inputFile = "input.txt";
     char* outputFile = "output.txt";
 
@@ -184,10 +196,14 @@ int main(int argc, char* argv[]) {
     }
 
     tmp = malloc(sim_memsize_01_03(n));
+    E = malloc(n * sizeof(double));
     sim_01_03(n, A, tmp, 0);
     free(tmp);
     tmp = malloc(evc_memsize_01_03(n));
-    evc_01_03(n,100,-1,A,A,tmp,-1);
+
+    int result = evc_01_03(n,0, epsilon, A, E ,tmp, precision);
+
+    writeAnswer(outputFile, n, E, result);
 
     return 0;
 }

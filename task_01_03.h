@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "math.h"
 
 int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, double* tmp, double precision);
 int sim_01_03(int n, double* A, double* tmp, double precision);

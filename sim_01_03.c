@@ -69,7 +69,7 @@ double calculateNorm(Matrix a){
     return sqrt(result);
 }
 
-void multiply(Matrix A, Matrix B, Matrix C){
+void multiply(Matrix A, Matrix B, Matrix C, double precision){
     int i, j, k;
     *C.n = *A.n;
     *C.m = *B.m;
@@ -77,8 +77,10 @@ void multiply(Matrix A, Matrix B, Matrix C){
         for(j = 0; j < *B.m; j++){
             *At(C, i, j) = 0;
             for(k = 0; k < *A.m; k++)
-                *At(C, i, j) += *At(A, i, k) *
-                        *At(B, k, j);
+                *At(C, i, j) += *At(A, i, k) *  *At(B, k, j);
+            if(fabs(*At(C, i, j)) < precision){
+                *At(C, i, j) = 0;
+            }
         }
     }
 }
@@ -97,23 +99,31 @@ void initA1(int iteration, Matrix A, Matrix a1){
     }
 }
 
-void initX(Matrix a1, Matrix x){
+int initX(Matrix a1, Matrix x, double precision){
     int i; double norm;
     copyMatrix(a1, x);
 
     *At(x, 0, 0) -= calculateNorm(a1);
+    if(fabs(*At(x, 0, 0)) < precision)
+        *At(x, 0, 0) = 0;
 
     norm = calculateNorm(x);
-    for(i = 0; i < *x.n; i++){
-        *At(x, i, 0) /= norm;
-    }
+    if(norm > precision) {
+        for (i = 0; i < *x.n; i++) {
+            *At(x, i, 0) /= norm;
+            if (fabs(*At(x, i, 0)) < precision)
+                *At(x, i, 0) = 0;
+        }
+        return 1;
+    } else
+        return 0;
 }
 
-void initY(Matrix A, Matrix x, Matrix y){
-    multiply(A, x, y);
+void initY(Matrix A, Matrix x, Matrix y, double precision){
+    multiply(A, x, y, precision);
 }
 
-void initZ(Matrix x, Matrix y, Matrix z){
+void initZ(Matrix x, Matrix y, Matrix z, double precision){
     int i; double scalar = scalarMultiplication(x, y);
 
     copyMatrix(y, z);
@@ -121,16 +131,23 @@ void initZ(Matrix x, Matrix y, Matrix z){
 
     for(i = 0; i < *z.n; i++){
         *At(z, i, 0) -= 2 * scalar * (*At(x, i, 0));
+
+        if(fabs(*At(z, i, 0)) < precision){
+            *At(z, i, 0) = 0;
+        }
     }
 }
 
-void calculateSubMatrix(Matrix subMatrix, Matrix x, Matrix z){
+void calculateSubMatrix(Matrix subMatrix, Matrix x, Matrix z, double precision){
     int i, j;
 
     for(i = 0; i < *subMatrix.n; i++){
         for(j = 0; j < *subMatrix.m; j++){
             *At(subMatrix, i, j) -= *At(z, i, 0) * *At(x, j, 0);
             *At(subMatrix, i, j) -= *At(x, i, 0) * *At(z, j, 0);
+            if(fabs(*At(subMatrix, i, j)) < precision){
+                *At(subMatrix, i, j) = 0;
+            }
         }
     }
 }
@@ -167,7 +184,7 @@ void nextStep(int iteration, Matrix target, Matrix a1, Matrix targetSubMatrix){
 
 
 int sim_01_03(int n, double* A, double* tmp, double precision){
-    Matrix target, a1, x, y, z, subMatrix, tmpSubMatrix;
+    Matrix target, a1, x, y, z, subMatrix;
     int i;
 
     target.n = (int*)tmp;
@@ -199,13 +216,13 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
     for(i = 0; i < n - 2; i++){
         initA1(i, target, a1);
         if(calculateNorm(a1) > precision) {
-            initX(a1, x);
-            initSubMatrix(i, target, subMatrix);
-            initY(subMatrix, x, y);
-            initZ(x, y, z);
-            calculateSubMatrix(subMatrix, x, z);
-            nextStep(i, target, a1, subMatrix);
+            if(initX(a1, x, precision)) {
+                initSubMatrix(i, target, subMatrix);
+                initY(subMatrix, x, y, precision);
+                initZ(x, y, z, precision);
+                calculateSubMatrix(subMatrix, x, z, precision);
+                nextStep(i, target, a1, subMatrix);
+            }
         }
     }
-    printMatrix(target);
 }
