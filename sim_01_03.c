@@ -266,4 +266,5 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
         printf("Matrix simplification completed successfully.\n");
     }
 
+    return 0;
 }

@@ -59,7 +59,7 @@ int LRTransformation(int n, double* A, double* L, double* R, int precision_itera
         }
     }
 
-    return 1;
+    return 0;
 }
 
 void fastMultiplyForLR(int n, double* R, double* L, double* C, int precision_iteration){
@@ -147,8 +147,8 @@ int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, d
         double sk = *GET(A, n, precision_iteration-1, precision_iteration-1);
         addValueToDiagonal(n, A, precision_iteration, -sk);
 
-        if(!LRTransformation(n, A, L, R, precision_iteration, precision))
-            return -1;
+        if(LRTransformation(n, A, L, R, precision_iteration, precision))
+            return 2;
 
         fastMultiplyForLR(n, R, L, A, precision_iteration);
         addValueToDiagonal(n, A, precision_iteration, sk);
