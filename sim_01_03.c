@@ -5,11 +5,16 @@
 #include "task_01_03.h"
 #include <math.h>
 
+int sim_memsize_01_03(int n){
+    return (5*n+6+n*n)*sizeof(double);
+}
+
 typedef struct {
     int* n,* m;
     double* matrix;
 }Matrix;
 
+extern int fl_e, fl_d;
 
 double* At(Matrix A, int i, int j){
     return A.matrix + i * *(A.m) + j;
@@ -17,14 +22,14 @@ double* At(Matrix A, int i, int j){
 
 void printMatrix(Matrix matrix){
     int i, j;
-    printf("-----\n");
+    printf("--------------------\n");
     for(i = 0; i < *matrix.n; i++){
         for(j = 0; j < *matrix.m; j++){
             printf("%lf ", *At(matrix, i, j));
         }
         printf("\n");
     }
-    printf("-----\n");
+    printf("--------------------\n");
 }
 
 // be sure that target matrix has the same or more memory
@@ -59,8 +64,6 @@ double scalarMultiplication(Matrix a, Matrix b){
 
 double calculateNorm(Matrix a){
     int i;
-    if(*a.m != 1)
-        return -1;
     double result = 0;
     for(i = 0; i < *a.n; i++){
         result += (*At(a, i, 0)) * (*At(a, i, 0));
@@ -83,11 +86,6 @@ void multiply(Matrix A, Matrix B, Matrix C, double precision){
             }
         }
     }
-}
-
-
-int sim_memsize_01_03(int n){
-    return 1000*n*sizeof(double);
 }
 
 void initA1(int iteration, Matrix A, Matrix a1){
@@ -182,6 +180,18 @@ void nextStep(int iteration, Matrix target, Matrix a1, Matrix targetSubMatrix){
     *At(target, iteration+1, iteration) = norm;
 }
 
+int isMatrixSymmetric(Matrix A, double precision){
+    int i, j;
+    for(i = 0; i < *A.n; i++){
+        for(j = i; j < *A.m; j++){
+            if(fabs(*At(A, i, j)-*At(A, j, i)) > precision)
+                return 0;
+        }
+    }
+
+    return 1;
+}
+
 
 int sim_01_03(int n, double* A, double* tmp, double precision){
     Matrix target, a1, x, y, z, subMatrix;
@@ -192,6 +202,21 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
     target.matrix = A;
     *target.n = n;
     *target.m = n;
+
+    if(fl_d) {
+        printf("Checking if matrix is symmetric...\n");
+    }
+
+    if(!isMatrixSymmetric(target, precision)) {
+        if(fl_e) {
+            printf("Error. Matrix is not symmetric\n");
+        }
+        return -1;
+    }
+
+    if(fl_d) {
+        printf("Matrix is symmetric.\nAssigning temporary memory...\n");
+    }
 
     a1.matrix = tmp+1;
     a1.n = (int*)(tmp+1+n);
@@ -213,7 +238,14 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
     subMatrix.n = (int*)(tmp+5*n+4+n*n);
     subMatrix.m = (int*)(tmp+5*n+4+n*n)+1;
 
+    if(fl_d){
+        printf("Starting to simplify matrix...\n");
+    }
+
     for(i = 0; i < n - 2; i++){
+        if(fl_d){
+            printf("%d/%d\n", i+1, n - 2);
+        }
         initA1(i, target, a1);
         if(calculateNorm(a1) > precision) {
             if(initX(a1, x, precision)) {
@@ -224,5 +256,14 @@ int sim_01_03(int n, double* A, double* tmp, double precision){
                 nextStep(i, target, a1, subMatrix);
             }
         }
+        if(fl_d){
+            printMatrix(target);
+
+        }
     }
+
+    if(fl_d) {
+        printf("Matrix simplification completed successfully.\n");
+    }
+
 }

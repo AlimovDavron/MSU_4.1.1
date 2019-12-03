@@ -1,7 +1,5 @@
 #include "task_01_03.h"
 
-#define AT(A, x, y, n) (A+(x)*(n)+(y))
-
 int fl_d = 0,
         fl_e = 0,
         fl_p = 0,
@@ -52,7 +50,7 @@ int validateParameters(int argc, char **argv){
                     fl_t = 1;
                     break;
                 default:
-                    return 3;
+                    return 2;
             }
         else if(argv[i][0] == '-'){
             int max_iter_temp; double precision_temp, epsilon_temp;
@@ -60,7 +58,7 @@ int validateParameters(int argc, char **argv){
                 if(max_iter_temp >= 0){
                     max_iter = max_iter_temp;
                 } else {
-                    // todo:
+                    return 3;
                 }
             }
             else if(sscanf(argv[i], "-pre=%lf", &precision_temp) == 1){
@@ -69,8 +67,7 @@ int validateParameters(int argc, char **argv){
             else if(sscanf(argv[i], "-eps=%lf", &epsilon_temp) == 1){
                 epsilon = epsilon_temp;
             } else {
-                printf("err");
-                // todo:
+                return 2;
             }
         }
         else{
@@ -91,21 +88,22 @@ int readInputData(char *inputFile, double** A, int *n)
 
     checkInput = fscanf(in, "%d", n);
     if(checkInput == EOF)
-        return 4;
+        return 6;
+
     if(checkInput == 0)
-        return 3;
+        return 7;
 
     if(*n <= 0)
-        return 1;
+        return 7;
 
     *A = malloc((*n) * (*n) * sizeof(double));
 
     for(i = 0; i < (*n)*(*n); i++) {
         checkInput = fscanf(in, "%lf", (*A + i));
         if (checkInput == EOF)
-            return 2;
+            return 8;
         if(checkInput == 0)
-            return 3;
+            return 9;
     }
 
     return 0;
@@ -146,17 +144,17 @@ int main(int argc, char* argv[]) {
     switch (validateParameters(argc, argv))
     {
         case 1:
-            if(fl_e) printf("ValidationError: Wrong syntax of parameters.\n");
-            return 8;
+            printf("ValidationError: Wrong syntax of parameters. There are more than two filenames\n");
+            return 1;
         case 2:
-            if(fl_e) printf("ValidationError. Wrong syntax of parameters.\n");
-            return 3;
+            printf("ValidationError. Wrong syntax of parameters. There is no such parameter or you haven't"
+                   "set value to one of the parameters\n");
+            return 2;
         case 3:
-            if(fl_e) printf("ValidationError. Wrong syntax of parameters. There "
-                            "is no such parameter.\n");
-            return 4;
-
-        default: break;
+            printf("ValidationError. Wrong syntax of parameters. Max_iter must be non negative\n");
+            return 3;
+        default:
+            break;
     }
 
     if(fl_q || fl_h){
@@ -166,44 +164,64 @@ int main(int argc, char* argv[]) {
 
     for(int i = 1; i < argc; i++){
         if(argv[i][0] != '-'){
-            if(!setInput){
+            if (!setInput) {
+                if(i != 1){
+                    if(fl_e) printf("ValidationError: Wrong order of parameters.\n");
+                    return 4;
+                }
                 inputFile = argv[i];
-                if(!validateFile(inputFile))
-                {
-                    if(fl_e) printf("ValidationError: Wrong syntax of parameters.\n");
-                    return 2;
+                if (!validateFile(inputFile)) {
+                    if (fl_e) printf("ValidationError: There is no such file.\n");
+                    return 5;
                 }
                 setInput = 1;
-            }
-            else {
+            } else {
+                if(i != 2) {
+                    if (fl_e) printf("ValidationError: Wrong order of parameters.\n");
+                    return 4;
+                }
                 outputFile = argv[i];
             }
+
         }
     }
 
     switch (readInputData(inputFile, &A, &n))
     {
-        case 1:
-            if(fl_e) printf("ValidationError. Incorrect input.\n");
-            return 5;
-        case 2:
-            if(fl_e) printf("ValidationError. Incorrect number of coefficients. (Not enough) \n");
+        case 6:
+            if(fl_e) printf("ValidationError. File is empty.\n");
             return 6;
-        case 3:
-            if(fl_e) printf("ValidationError. One of the coefficients is not a number \n");
+        case 7:
+            if(fl_e) printf("ValidationError. n is not a positive integer.\n");
             return 7;
-        default: break;
+        case 8:
+            if(fl_e) printf("ValidationError. Not enough elements in the matrix.\n");
+            return 8;
+        case 9:
+            if(fl_e) printf("ValidationError. One of the elements of the matrix is not a number.\n");
+            return 9;
+        default:
+            break;
     }
 
     tmp = malloc(sim_memsize_01_03(n));
     E = malloc(n * sizeof(double));
-    sim_01_03(n, A, tmp, 0);
+
+    clock_t begin = clock();
+    if(sim_01_03(n, A, tmp, precision) == -1){
+        return 10;
+    }
+
     free(tmp);
     tmp = malloc(evc_memsize_01_03(n));
 
     int result = evc_01_03(n,0, epsilon, A, E ,tmp, precision);
+    clock_t end = clock();
+
+    double timeSpent = (double)(end - begin) / CLOCKS_PER_SEC;
+
+    if(fl_t) printf("Execution time: %1.9lf\n", timeSpent);
 
     writeAnswer(outputFile, n, E, result);
-
     return 0;
 }

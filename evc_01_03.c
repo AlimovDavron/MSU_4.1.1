@@ -5,8 +5,10 @@
 #include "task_01_03.h"
 
 int evc_memsize_01_03(int n){
-    return 10*n*n*sizeof(double);
+    return 3*n*n*sizeof(double);
 }
+
+extern int fl_d;
 
 #define GET(A, n,  x, y) (A+(x)*(n)+(y))
 
@@ -110,12 +112,21 @@ int compare(const double* a, const double* b){
 }
 
 int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, double* tmp, double precision){
-    int i, accuracy_achieved = 0;
+    int i, accuracy_achieved = 0, k, d;
     double D;
     double *L = tmp, *R = tmp + n*n;
 
+    if(fl_d){
+        printf("Starting to apply LR method...\n");
+    }
+
     int precision_iteration = n;
     for(i = 0; i < max_iterations || !max_iterations; i++) {
+        if(fl_d){
+            if(max_iterations) printf("Iteration: %d/%d\n", i+1, max_iterations);
+            else printf("Iteration: %d\n", i+1);
+        }
+
         while(checkPrecisionCondition(n, A, epsilon, precision_iteration, getNorm(n, A,precision_iteration)) && precision_iteration > 2){
             precision_iteration--;
         }
@@ -141,6 +152,17 @@ int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, d
 
         fastMultiplyForLR(n, R, L, A, precision_iteration);
         addValueToDiagonal(n, A, precision_iteration, sk);
+
+        if(fl_d){
+            printf("--------------------\n");
+            for(k = 0; k < n; k++){
+                for(d = 0; d < n; d++){
+                    printf("%1.9lf ", *GET(A, n, k, d));
+                } printf("\n");
+            }
+            printf("--------------------\n");
+        }
+
     }
 
     for(i = 0; i < n; i++){
@@ -151,6 +173,14 @@ int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, d
     }
 
     qsort(E, n, sizeof(double), compare);
+
+    if(fl_d){
+        printf("Method completed successfully.\nAnswer:\n");
+    }
+
+    for(i = 0; i < n; i++){
+        printf("%1.9lf ", *GET(E, n, 0, i));
+    } printf("\n");
 
     return !accuracy_achieved;
 }
