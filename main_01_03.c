@@ -145,7 +145,7 @@ int main(int argc, char* argv[]) {
     {
         case 1:
             printf("ValidationError: Wrong syntax of parameters. There are more than two filenames\n");
-            return 1;
+            return 11;
         case 2:
             printf("ValidationError. Wrong syntax of parameters. There is no such parameter or you haven't"
                    "set value to one of the parameters\n");
@@ -209,6 +209,7 @@ int main(int argc, char* argv[]) {
 
     clock_t begin = clock();
     if(sim_01_03(n, A, tmp, precision) == -1){
+        if(fl_e) printf("ValidationError. Matrix is not symmetric.\n");
         return 10;
     }
 
@@ -223,5 +224,6 @@ int main(int argc, char* argv[]) {
     if(fl_t) printf("Execution time: %1.9lf\n", timeSpent);
 
     writeAnswer(outputFile, n, E, result);
-    return 0;
+
+    return result;
 }
