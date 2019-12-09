@@ -6,7 +6,7 @@
 #include <math.h>
 
 int sim_memsize_01_03(int n){
-    return (5*n+6+n*n)*sizeof(double);
+    return (5*n+7+n*n)*sizeof(double);
 }
 
 typedef struct {

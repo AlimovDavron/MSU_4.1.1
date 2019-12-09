@@ -135,6 +135,15 @@ void printHelp(){
            " -h, -?            print this and exit");
 }
 
+void print(int n, double* A){
+    int i, j;
+    for(i = 0; i < n; i++){
+        for(j = 0; j < n; j++){
+            printf("%1.9lf ", *(A + i*n + j));
+        } printf("\n");
+    } printf("\n");
+}
+
 int main(int argc, char* argv[]) {
     int n, setInput = 0;
     double *A, *tmp, *E;
@@ -144,14 +153,14 @@ int main(int argc, char* argv[]) {
     switch (validateParameters(argc, argv))
     {
         case 1:
-            printf("ValidationError: Wrong syntax of parameters. There are more than two filenames\n");
+            if (fl_e) printf("ValidationError: Wrong syntax of parameters. There are more than two filenames\n");
             return 11;
         case 2:
-            printf("ValidationError. Wrong syntax of parameters. There is no such parameter or you haven't"
+            if (fl_e) printf("ValidationError. Wrong syntax of parameters. There is no such parameter or you haven't"
                    " set value to one of the parameters\n");
             return 2;
         case 3:
-            printf("ValidationError. Wrong syntax of parameters. Max_iter must be non negative\n");
+            if (fl_e) printf("ValidationError. Wrong syntax of parameters. Max_iter must be non negative\n");
             return 3;
         default:
             break;
@@ -166,18 +175,18 @@ int main(int argc, char* argv[]) {
         if(argv[i][0] != '-'){
             if (!setInput) {
                 if(i != 1){
-                    printf("ValidationError: Wrong order of parameters.\n");
+                    if (fl_e) printf("ValidationError: Wrong order of parameters.\n");
                     return 4;
                 }
                 inputFile = argv[i];
                 if (!validateFile(inputFile)) {
-                    printf("ValidationError: There is no such file.\n");
+                    if (fl_e) printf("ValidationError: There is no such file.\n");
                     return 5;
                 }
                 setInput = 1;
             } else {
                 if(i != 2) {
-                    printf("ValidationError: Wrong order of parameters.\n");
+                    if (fl_e) printf("ValidationError: Wrong order of parameters.\n");
                     return 4;
                 }
                 outputFile = argv[i];
@@ -221,11 +230,20 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    if(fl_p) {
+        print(n, A);
+    }
+
     free(tmp);
     tmp = malloc(evc_memsize_01_03(n));
 
     int result = evc_01_03(n,max_iter, epsilon, A, E ,tmp, precision);
     clock_t end = clock();
+
+    if(fl_p) {
+        print(n, A);
+    }
+
 
     double timeSpent = (double)(end - begin) / CLOCKS_PER_SEC;
 
