@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
             return 11;
         case 2:
             printf("ValidationError. Wrong syntax of parameters. There is no such parameter or you haven't"
-                   "set value to one of the parameters\n");
+                   " set value to one of the parameters\n");
             return 2;
         case 3:
             printf("ValidationError. Wrong syntax of parameters. Max_iter must be non negative\n");
@@ -216,7 +216,7 @@ int main(int argc, char* argv[]) {
     free(tmp);
     tmp = malloc(evc_memsize_01_03(n));
 
-    int result = evc_01_03(n,0, epsilon, A, E ,tmp, precision);
+    int result = evc_01_03(n,max_iter, epsilon, A, E ,tmp, precision);
     clock_t end = clock();
 
     double timeSpent = (double)(end - begin) / CLOCKS_PER_SEC;

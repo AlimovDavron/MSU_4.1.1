@@ -178,9 +178,12 @@ int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, d
         printf("Method completed successfully.\nAnswer:\n");
     }
 
-    for(i = 0; i < n; i++){
-        printf("%1.9lf ", *GET(E, n, 0, i));
-    } printf("\n");
+    if(fl_d) {
+        for (i = 0; i < n; i++) {
+            printf("%1.9lf ", *GET(E, n, 0, i));
+        }
+        printf("\n");
+    }
 
     return !accuracy_achieved;
 }
