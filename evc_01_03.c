@@ -107,8 +107,8 @@ void addValueToDiagonal(int n, double *A, double precision_iteration, double val
     }
 }
 
-int compare(const double* a, const double* b){
-    return *a > *b;
+int compare(const void *a, const void *b){
+    return *((double*)a) > *((double*)b);
 }
 
 int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, double* tmp, double precision){
@@ -148,7 +148,7 @@ int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, d
         addValueToDiagonal(n, A, precision_iteration, -sk);
 
         if(LRTransformation(n, A, L, R, precision_iteration, precision))
-            return 2;
+            return -1;
 
         fastMultiplyForLR(n, R, L, A, precision_iteration);
         addValueToDiagonal(n, A, precision_iteration, sk);

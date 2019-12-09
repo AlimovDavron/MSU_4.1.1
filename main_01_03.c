@@ -138,8 +138,8 @@ void printHelp(){
 int main(int argc, char* argv[]) {
     int n, setInput = 0;
     double *A, *tmp, *E;
-    char* inputFile = "input.txt";
-    char* outputFile = "output.txt";
+    char* inputFile = "01_03_in.txt";
+    char* outputFile = "01_03_out.txt";
 
     switch (validateParameters(argc, argv))
     {
@@ -166,23 +166,30 @@ int main(int argc, char* argv[]) {
         if(argv[i][0] != '-'){
             if (!setInput) {
                 if(i != 1){
-                    if(fl_e) printf("ValidationError: Wrong order of parameters.\n");
+                    printf("ValidationError: Wrong order of parameters.\n");
                     return 4;
                 }
                 inputFile = argv[i];
                 if (!validateFile(inputFile)) {
-                    if (fl_e) printf("ValidationError: There is no such file.\n");
+                    printf("ValidationError: There is no such file.\n");
                     return 5;
                 }
                 setInput = 1;
             } else {
                 if(i != 2) {
-                    if (fl_e) printf("ValidationError: Wrong order of parameters.\n");
+                    printf("ValidationError: Wrong order of parameters.\n");
                     return 4;
                 }
                 outputFile = argv[i];
             }
 
+        }
+    }
+
+    if(!setInput){
+        if (!validateFile(inputFile)) {
+            if (fl_e) printf("ValidationError: There is no such file.\n");
+            return 5;
         }
     }
 
@@ -210,7 +217,8 @@ int main(int argc, char* argv[]) {
     clock_t begin = clock();
     if(sim_01_03(n, A, tmp, precision) == -1){
         if(fl_e) printf("ValidationError. Matrix is not symmetric.\n");
-        return 10;
+        writeAnswer(outputFile, n, E, -1);
+        return -1;
     }
 
     free(tmp);
