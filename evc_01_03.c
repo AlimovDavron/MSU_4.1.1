@@ -116,6 +116,11 @@ int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, d
     double D;
     double *L = tmp, *R = tmp + n*n;
 
+    if(n == 1){
+        *E = *A;
+        return 0;
+    }
+
     if(fl_d){
         printf("Starting to apply LR method...\n");
     }

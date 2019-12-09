@@ -61,7 +61,7 @@ int validateParameters(int argc, char **argv){
                     return 3;
                 }
             }
-            else if(sscanf(argv[i], "-pre=%lf", &precision_temp) == 1){
+            else if(sscanf(argv[i], "-prec=%lf", &precision_temp) == 1){
                 precision = precision_temp;
             }
             else if(sscanf(argv[i], "-eps=%lf", &epsilon_temp) == 1){
