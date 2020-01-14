@@ -126,13 +126,14 @@ int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, d
     }
 
     int precision_iteration = n;
+    double norm = getNorm(n, A,precision_iteration);
     for(i = 0; i < max_iterations || !max_iterations; i++) {
         if(fl_d){
             if(max_iterations) printf("Iteration: %d/%d\n", i+1, max_iterations);
             else printf("Iteration: %d\n", i+1);
         }
 
-        while(checkPrecisionCondition(n, A, epsilon, precision_iteration, getNorm(n, A,precision_iteration)) && precision_iteration > 2){
+        while(checkPrecisionCondition(n, A, epsilon, precision_iteration, norm) && precision_iteration > 2){
             precision_iteration--;
         }
 
@@ -152,7 +153,7 @@ int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, d
         double sk = *GET(A, n, precision_iteration-1, precision_iteration-1);
         addValueToDiagonal(n, A, precision_iteration, -sk);
 
-        if(LRTransformation(n, A, L, R, precision_iteration, precision))
+        if(!LRTransformation(n, A, L, R, precision_iteration, precision))
             return -1;
 
         fastMultiplyForLR(n, R, L, A, precision_iteration);
