@@ -35,7 +35,7 @@ int LRTransformation(int n, double* A, double* L, double* R, int precision_itera
         *GET(L, n, i, i) = 1;
 
         if(fabs(*GET(R, n, i - 1, i - 1)) < precision){
-            return 0;
+            return 1;
         }
 
         *GET(L, n, i, i - 1) = *GET(A, n, i, i - 1) / (*GET(R, n, i - 1, i - 1));
@@ -153,7 +153,7 @@ int evc_01_03(int n, int max_iterations, double epsilon, double* A, double* E, d
         double sk = *GET(A, n, precision_iteration-1, precision_iteration-1);
         addValueToDiagonal(n, A, precision_iteration, -sk);
 
-        if(!LRTransformation(n, A, L, R, precision_iteration, precision))
+        if(LRTransformation(n, A, L, R, precision_iteration, precision))
             return -1;
 
         fastMultiplyForLR(n, R, L, A, precision_iteration);
